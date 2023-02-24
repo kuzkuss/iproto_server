@@ -6,26 +6,9 @@ import (
 	"errors"
 	"log"
 	"net"
+
+	"github.com/kuzkuss/iproto_server/models"
 )
-
-const (
-	ADM_STORAGE_SWITCH_READONLY = 0x00010001
-	ADM_STORAGE_SWITCH_READWRITE = 0x00010002
-	ADM_STORAGE_SWITCH_MAINTENANCE = 0x00010003
-	STORAGE_REPLACE = 0x00020001
-	STORAGE_READ = 0x00020002
-)
-
-type Header struct {
-	funcId uint32
-	bodyLength uint32
-	requestId uint32
-}
-
-type Request struct {
-	header Header
-	body []byte
-}
 
 func main() {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", "localhost:8080")
@@ -68,31 +51,31 @@ func handleConnection(conn *net.TCPConn) {
 	}
 }
 
-func getRequest(conn *net.TCPConn) (*Request, error) {
+func getRequest(conn *net.TCPConn) (*models.Request, error) {
 	headerBytes := make([]byte, 12)
 	_, err := conn.Read(headerBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	req := Request{}
+	req := models.Request{}
 	headerBuf := bytes.NewBuffer(headerBytes)
 
-	if err := binary.Read(headerBuf, binary.LittleEndian, &req.header.funcId); err != nil {
+	if err := binary.Read(headerBuf, binary.LittleEndian, &req.Header.FuncId); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Read(headerBuf, binary.LittleEndian, &req.header.bodyLength); err != nil {
+	if err := binary.Read(headerBuf, binary.LittleEndian, &req.Header.BodyLength); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Read(headerBuf, binary.LittleEndian, &req.header.requestId); err != nil {
+	if err := binary.Read(headerBuf, binary.LittleEndian, &req.Header.RequestId); err != nil {
 		return nil, err
 	}
 
-	req.body = make([]byte, req.header.bodyLength)
+	req.Body = make([]byte, req.Header.BodyLength)
 
-	_, err = conn.Read(req.body)
+	_, err = conn.Read(req.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +83,7 @@ func getRequest(conn *net.TCPConn) (*Request, error) {
 	return &req, nil
 }
 
-func handleRequest(request *Request) error {
+func handleRequest(request *models.Request) error {
 	switch request.header.funcId {
 	case ADM_STORAGE_SWITCH_READONLY:
 		switchReadOnly(request)
@@ -121,6 +104,6 @@ func handleRequest(request *Request) error {
 }
 
 func switchReadOnly(request *Request) {
-
+	
 }
 
