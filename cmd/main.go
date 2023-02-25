@@ -1,13 +1,12 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
-	"errors"
 	"log"
 	"net"
 
-	"github.com/kuzkuss/iproto_server/models"
+	"github.com/kuzkuss/iproto_server/internal/delivery"
+	"github.com/kuzkuss/iproto_server/internal/repository"
+	"github.com/kuzkuss/iproto_server/internal/usecase"
 )
 
 func main() {
@@ -22,88 +21,36 @@ func main() {
 	}
 	defer ln.Close()
 
+	rep := repository.New()
+	useCase := usecase.New(rep)
+	del := delivery.New(useCase)
+
 	for {
 		conn, err := ln.AcceptTCP()
 		if err != nil {
 			log.Fatal(err)
 		}
-		go handleConnection(conn)
+		go handleConnection(del, conn)
 	}
 }
 
-func handleConnection(conn *net.TCPConn) {
+func handleConnection(del delivery.DeliveryI, conn *net.TCPConn) {
 	defer conn.Close()
-	req, err := getRequest(conn)
+	req, err := del.GetRequest(conn)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	err = handleRequest(req)
+	err = del.HandleRequest(req)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	if err := sendResponse(conn); err != nil {
+	if err := del.SendResponse(conn); err != nil {
 		log.Println(err)
 		return
 	}
-}
-
-func getRequest(conn *net.TCPConn) (*models.Request, error) {
-	headerBytes := make([]byte, 12)
-	_, err := conn.Read(headerBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	req := models.Request{}
-	headerBuf := bytes.NewBuffer(headerBytes)
-
-	if err := binary.Read(headerBuf, binary.LittleEndian, &req.Header.FuncId); err != nil {
-		return nil, err
-	}
-
-	if err := binary.Read(headerBuf, binary.LittleEndian, &req.Header.BodyLength); err != nil {
-		return nil, err
-	}
-
-	if err := binary.Read(headerBuf, binary.LittleEndian, &req.Header.RequestId); err != nil {
-		return nil, err
-	}
-
-	req.Body = make([]byte, req.Header.BodyLength)
-
-	_, err = conn.Read(req.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return &req, nil
-}
-
-func handleRequest(request *models.Request) error {
-	switch request.header.funcId {
-	case ADM_STORAGE_SWITCH_READONLY:
-		switchReadOnly(request)
-
-	case ADM_STORAGE_SWITCH_READWRITE:
-	
-	case ADM_STORAGE_SWITCH_MAINTENANCE:
-		
-	case STORAGE_REPLACE:
-		
-	case STORAGE_READ:
-	
-	default:
-		return errors.New("invalid request func")
-	}
-
-	return nil
-}
-
-func switchReadOnly(request *Request) {
-	
 }
 

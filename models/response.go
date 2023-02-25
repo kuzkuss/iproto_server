@@ -1,7 +1,8 @@
 package models
 
-type Request struct {
+type Response struct {
 	Header Header
+	ReturnCode int
 	Body []byte
 }
 

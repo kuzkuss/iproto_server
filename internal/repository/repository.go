@@ -6,7 +6,7 @@ import (
 
 type RepositoryI interface {
 	ChangeState(newState int)
-	AddString(idx int, str string) error
+	SaveString(idx int, str string) error
 	GetString(idx int) (string, error)
 	GetState() int
 }
@@ -32,7 +32,7 @@ func (strg *storage) GetState() int {
 	return strg.state
 }
 
-func (strg *storage) AddString(idx int, str string) error {
+func (strg *storage) SaveString(idx int, str string) error {
 	if idx >= SIZE_STORE {
 		return models.ErrIndex
 	}
