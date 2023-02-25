@@ -5,3 +5,12 @@ type Request struct {
 	Body []byte
 }
 
+type RequestSaveString struct {
+	Idx int
+	Str string
+}
+
+type RequestGetString struct {
+	Idx int
+}
+

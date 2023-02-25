@@ -6,10 +6,12 @@ var (
 	ErrIndex = errors.New("index out of range")
 	ErrFuncId = errors.New("invalid request func")
 	ErrState = errors.New("invalid state")
+	ErrAccess = errors.New("access denied")
 )
 
-var errorCodes = map[int]error{
-	0x00000001: ErrIndex,
-	0x00000002: ErrFuncId,
-	0x00000003: ErrState,
+var errorCodes = map[error]int{
+	ErrIndex: 1,
+	ErrFuncId: 2,
+	ErrState: 3,
+	ErrAccess: 4,
 }
