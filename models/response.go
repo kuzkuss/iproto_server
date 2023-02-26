@@ -2,7 +2,7 @@ package models
 
 type Response struct {
 	Header Header
-	ReturnCode int
+	ReturnCode uint32
 	Body []byte
 }
 

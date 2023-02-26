@@ -7,6 +7,7 @@ import (
 	"github.com/kuzkuss/iproto_server/internal/delivery"
 	"github.com/kuzkuss/iproto_server/internal/repository"
 	"github.com/kuzkuss/iproto_server/internal/usecase"
+	"github.com/kuzkuss/iproto_server/models"
 )
 
 func main() {
@@ -36,19 +37,20 @@ func main() {
 
 func handleConnection(del delivery.DeliveryI, conn *net.TCPConn) {
 	defer conn.Close()
+
+	var res interface{}
 	req, err := del.GetRequest(conn)
-	if err != nil {
-		log.Println(err)
-		return
+	if err == nil {
+		res, err = del.HandleRequest(req)
+		if err == nil {
+			if err := del.SendResponse(conn, req.Header, res, models.OK); err != nil {
+				log.Println(err)
+				return
+			}
+		}
 	}
 
-	err = del.HandleRequest(req)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	if err := del.SendResponse(conn); err != nil {
+	if err := del.SendResponse(conn, req.Header, err.Error(), models.ErrorCodes[err]); err != nil {
 		log.Println(err)
 		return
 	}

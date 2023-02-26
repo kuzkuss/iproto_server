@@ -10,5 +10,9 @@ const (
 	READ_ONLY = 0
 	READ_WRITE = 1
 	MAINTENANCE = 2
+
+	SIZE_UINT = 4
+
+	OK = 0
 )
 
