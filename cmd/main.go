@@ -47,12 +47,15 @@ func handleConnection(del delivery.DeliveryI, conn *net.TCPConn) {
 				log.Println(err)
 				return
 			}
+			return
 		}
 	}
 
-	if err := del.SendResponse(conn, req.Header, err.Error(), models.ErrorCodes[err]); err != nil {
-		log.Println(err)
-		return
+	if req != nil {
+		if err := del.SendResponse(conn, req.Header, err.Error(), models.ErrorCodes[err]); err != nil {
+			log.Println(err)
+			return
+		}
 	}
 }
 

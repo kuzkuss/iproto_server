@@ -33,7 +33,7 @@ func (strg *storage) GetState() int {
 }
 
 func (strg *storage) SaveString(idx int, str string) error {
-	if idx >= SIZE_STORE {
+	if idx >= SIZE_STORE || idx < 0 {
 		return models.ErrIndex
 	}
 	strg.strs[idx] = str
@@ -41,7 +41,7 @@ func (strg *storage) SaveString(idx int, str string) error {
 }
 
 func (strg *storage) GetString(idx int) (string, error) {
-	if idx >= SIZE_STORE {
+	if idx >= SIZE_STORE || idx < 0 {
 		return "", models.ErrIndex
 	}
 	return strg.strs[idx], nil
